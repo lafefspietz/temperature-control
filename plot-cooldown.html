@@ -119,8 +119,8 @@ function setup() {
         if (this.readyState == 4 && this.status == 200) {
             files = JSON.parse(this.responseText);
             filename = files[files.length-1];
-            document.getElementById("datalink").href = filename;
-            document.getElementById("datalink").innerHTML = filename;
+            document.getElementById("datalink").href = "cooldown-log-data/" + filename;
+            document.getElementById("datalink").innerHTML = "cooldown-log-data/" + filename;
             var httpc = new XMLHttpRequest();
             httpc.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
