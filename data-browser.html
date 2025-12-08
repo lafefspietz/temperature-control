@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <!--
+
+-->
+<link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA/wAAAAD/AAAAAP8A/wD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAACIAADMwAEQAIgAAAwAARAAAIAADAAQAAAACAAAAQAAAAAAAAAAAAAAQAAAAAAABAREQAAAAAREQEAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAQAAwAgAAAAQAADAAIAAEQAAAMAACIARAAAMzAAIgAAAAADAAAAD/fwAAnjkAAJ95AADvdwAA9+8AAP9/AAC/fQAAD3AAAL99AAD8HwAA//8AAPdvAADvdwAAn3kAAJ45AAD/fwAA" rel="icon" type="image/x-icon">
+
+   <title>Temperature Data Browser</title>    
+   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+   <script>
+    MathJax.Hub.Config({
+        tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true,
+        processClass: "mathjax",
+        ignoreClass: "no-mathjax"
+        }
+    });//			MathJax.Hub.Typeset();//tell Mathjax to update the math
+</script>
+</head>
+<body>
+<div id = "scroll">
+    <a href= "index.html">HOME</a>
+
+    <h1>TEMPERATURE LOG</h1>
+    <h1>DATA BROWSER</h1>
+    <div class = "button" id = "savebutton">SAVE PNG</div>
+    <div id = "datalinkscroll">
+    </div>
+    <div id ="feedscroll"></div>
+</div>
+
+<table id = "timedatetable">
+    <tr>
+        <td>Start Date:</td>
+        <td id = "startdate"></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Start Time:</td>
+        <td id = "starttime"></td>
+        <td></td>
+    </tr>
+</table>
+<table id = "temptable">
+    <tr id ="rowa">
+        <td>A = </td>
+        <td id = "ta"></td>
+        <td>K</td>
+    </tr>
+    <tr id = "rowb">
+        <td>B = </td>
+        <td id = "tb"></td>
+        <td>K</td>
+    </tr>
+    <tr id = "rowtime">
+        <td>time = </td>
+        <td id = "time"></td>
+        <td> minutes</td>
+    </tr>
+</table>
+<script>
+if(innerWidth > innerHeight){
+    squaresize = innerHeight - 20;
+    document.getElementById("scroll").style.width = (innerWidth - squaresize - 60).toString() + "px";
+    
+    document.getElementById("scroll").style.height = (innerHeight - 47).toString() + "px";
+    
+}
+else{
+    squaresize = innerHeight - 10;
+    document.getElementById("scroll").style.width = (innerWidth - 10).toString() + "px";
+    document.getElementById("scroll").style.height = (innerHeight - squaresize -  15).toString() + "px";    
+}
+
+</script>
+<style>
+#feedscroll img{
+    max-width:90%;
+    display:block;
+    margin:auto;
+    margin-top:1em;
+    margin-bottom:1em;
+}
+#scroll{
+    position:absolute;
+    left:5px;
+    top:5px;
+    border:solid;
+    border-width:2px;
+    border-radius:5px;
+    padding:1em 1em 1em 1em;
+    overflow:scroll;
+    background-color:white;
+}
+#temptable{
+    position:absolute;
+    top:150px;
+    right:10px;
+    z-index:1;
+    font-size:3em;
+    font-family:Arial;
+}
+#timedatetable{
+    position:absolute;
+    top:5px;
+    right:10px;
+    z-index:1;
+    font-size:3em;
+    font-family:Arial;
+}
+#rowa{
+    color:blue;
+}
+#rowb{
+    color:red;
+}
+#time{
+    text-align:right;
+}
+body{
+    font-family:Arial;
+    background-color:#9f8767;
+    overflow:hidden;
+}
+input{
+    color:#00ff00;
+    background-color:black;
+    font-family:courier;
+    border-color:#0CCDDF;
+}
+h1{
+    text-align:center;
+}
+.button{
+    border:solid;
+    cursor:pointer;
+    text-align:center;
+}
+.button:hover{
+    background-color:#0CCDDF40;
+}
+.button:active{
+    background-color:#0CCDDFa0;
+}
+
+
+a{
+/*    color:#ff2cb4;*/
+    color:blue;
+}
+.datafilelink{
+    display:block;
+    color:blue;
+}
+.datalink{
+    color:blue;
+    border:solid;
+    border-color:blue;
+    text-align:center;
+    padding:5px 5px 5px 5px;
+    border-radius:5px;
+    margin-top:5px;
+    margin-bottom:5px;
+    cursor:pointer;
+}
+.datalink:hover{
+    background-color:#0000ff60;
+}
+.datalink:active{
+    background-color:#ffffff60;
+}
+main{
+    position:absolute;
+    right:5px;
+    top:5px;
+    border:solid;
+    cursor:pointer;
+    background-color:white;
+    border-radius:5px;
+}
+</style>
+<script>
+
+tlog = [];
+filename = "";
+numberofpoints = 600;
+dotsize = 10;
+timeindex = 0;
+pulseperiod = 100;
+files = [];
+
+state = {};
+state.A = 300;
+state.B = 300;
+state.datetime = "1970-01-01 00:00:00";
+tlog.push(state);
+
+function setup() {
+    createCanvas(squaresize,squaresize);    
+    strokeWeight(1);  
+    var httpcUpload = new XMLHttpRequest();
+    httpcUpload.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            files = JSON.parse(this.responseText);
+            document.getElementById("datalinkscroll").innerHTML = "";
+            for(var index = files.length - 1;index >= 0;index--){
+                var newdatalink = document.createElement("DIV");
+                document.getElementById("datalinkscroll").appendChild(newdatalink);
+                newdatalink.className = "datalink";
+                newdatalink.innerHTML = files[index];
+                newdatalink.onclick = function(){
+                    filename = "cooldown-log-data/" + this.innerHTML; 
+                    var httpc = new XMLHttpRequest();
+                    httpc.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            tlog = JSON.parse(this.responseText);
+                        }
+                    };
+                    httpc.open("GET", "load-file.php?filename=" + filename, true);
+                    httpc.send();
+                        
+                }
+                
+                filename = "cooldown-log-data/" + files[files.length - 1];
+                var httpc = new XMLHttpRequest();
+                httpc.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        tlog = JSON.parse(this.responseText);
+                    }
+                };
+                httpc.open("GET", "load-file.php?filename=" + filename, true);
+                httpc.send();
+                
+                var newa = document.createElement("A");
+                newa.href = filename;
+                newa.innerHTML = files[index];
+                newa.className = "datafilelink";
+                document.getElementById("datalinkscroll").appendChild(newa);
+                
+            }
+        }
+    };
+    httpcUpload.open("GET", "list-files.php?directoryname=cooldown-log-data", true);
+    httpcUpload.send();
+}
+
+timenow = 0;
+
+months = [
+"January",
+"February",
+"March",
+"April",
+"May",
+"June",
+"July",
+"August",
+"September",
+"October",
+"November",
+"December"
+];
+
+function draw(){
+    
+    if(filename.length>10){
+        timedatestring = filename.split("cooldown-log-data/cooldown_log_")[1].split(".json")[0];
+        timedatearray = timedatestring.split("_");
+        datestring = months[parseInt(timedatearray[1])-1] + " " + timedatearray[2] + ", " + timedatearray[0];
+        timestring = timedatearray[3][0] + timedatearray[3][1] + ":" +     timedatearray[3][2] + timedatearray[3][3];
+        document.getElementById("startdate").innerHTML = datestring;
+        document.getElementById("starttime").innerHTML = timestring;
+    }
+
+    dotsize = 15 + 2*Math.sin(2*Math.PI*timeindex/pulseperiod);    
+    clear();
+    stroke("black");
+    fill("black");
+    strokeWeight(1);
+    textSize(30);    
+    text("3 K",100,map(3,0,300,height,0) - 5);
+    text("10 K",10,map(10,0,300,height,0) - 5);
+    text("50 K",10,map(50,0,300,height,0) - 5);
+    text("100 K",10,map(100,0,300,height,0) - 5);
+    text("150 K",10,map(150,0,300,height,0) - 5);
+    text("200 K",10,map(200,0,300,height,0) - 5);
+    text("250 K",10,map(250,0,300,height,0) - 5);
+//    strokeWeight(2.5);
+    line(0,map(3,0,300,height,0),width,map(3,0,300,height,0));
+    line(0,map(10,0,300,height,0),width,map(10,0,300,height,0));
+    line(0,map(50,0,300,height,0),width,map(50,0,300,height,0));
+    line(0,map(100,0,300,height,0),width,map(100,0,300,height,0));
+    line(0,map(150,0,300,height,0),width,map(150,0,300,height,0));
+    line(0,map(200,0,300,height,0),width,map(200,0,300,height,0));
+    line(0,map(250,0,300,height,0),width,map(250,0,300,height,0));
+    strokeWeight(1);
+    
+    for(var index = 0;index < tlog.length;index++){
+        if(index%60==0){
+            line(map(index,0,tlog.length,0,width),0,map(index,0,tlog.length,0,width),height);
+//            textSize(25);    
+            text((index/60).toString() + " hr",map(index,0,tlog.length,0,width) + 5,0.7*height );
+        }
+    }
+    stroke("blue");
+    strokeWeight(5);
+    noFill();
+    beginShape();
+    for(var index = 0;index < tlog.length;index++){
+        vertex(map(index,0,tlog.length,0,width),map(tlog[index].A,0,300,height,0));
+    }
+    endShape();
+    stroke("red");
+    noFill();
+    beginShape();
+    for(var index = 0;index < tlog.length;index++){
+        vertex(map(index,0,tlog.length,0,width),map(tlog[index].B,0,300,height,0));
+    }
+    endShape();
+
+    document.getElementById("time").innerHTML = timenow.toString();
+    if(mouseX >=0 && mouseX < width && mouseY >= 0 && mouseY < height){
+        document.getElementById("temptable").style.display = "block";    
+        timenow = Math.round(map(mouseX,0,width,0,tlog.length));
+        stroke("purple");
+        line(mouseX,0,mouseX,height);
+        stroke("red");
+        fill("red");
+        circle(map(timenow,0,tlog.length,0,width),map(tlog[timenow].B,0,300,height,0),dotsize);
+        stroke("blue");
+        fill("blue");
+        circle(map(timenow,0,tlog.length,0,width),map(tlog[timenow].A,0,300,height,0),dotsize);
+        document.getElementById("ta").innerHTML = tlog[timenow].A.toString();
+        document.getElementById("tb").innerHTML = tlog[timenow].B.toString();                   
+    }
+    else{
+        timenow = 0;
+        document.getElementById("temptable").style.display = "none";    
+    }
+
+    
+    timeindex++;
+    if(timeindex > 10000){
+        timeindex = 0;
+    }
+    
+}
+
+
+document.getElementById("savebutton").onclick = function(){
+    clear();
+    background(255);
+    stroke("black");
+    fill("black");
+    strokeWeight(1);
+    textSize(30);    
+    text("3 K",100,map(3,0,300,height,0) - 5);
+    text("10 K",10,map(10,0,300,height,0) - 5);
+    text("50 K",10,map(50,0,300,height,0) - 5);
+    text("100 K",10,map(100,0,300,height,0) - 5);
+    text("150 K",10,map(150,0,300,height,0) - 5);
+    text("200 K",10,map(200,0,300,height,0) - 5);
+    text("250 K",10,map(250,0,300,height,0) - 5);
+//    strokeWeight(2.5);
+    line(0,map(3,0,300,height,0),width,map(3,0,300,height,0));
+    line(0,map(10,0,300,height,0),width,map(10,0,300,height,0));
+    line(0,map(50,0,300,height,0),width,map(50,0,300,height,0));
+    line(0,map(100,0,300,height,0),width,map(100,0,300,height,0));
+    line(0,map(150,0,300,height,0),width,map(150,0,300,height,0));
+    line(0,map(200,0,300,height,0),width,map(200,0,300,height,0));
+    line(0,map(250,0,300,height,0),width,map(250,0,300,height,0));
+    strokeWeight(1);
+    
+    for(var index = 0;index < tlog.length;index++){
+        if(index%60==0){
+            line(map(index,0,tlog.length,0,width),0,map(index,0,tlog.length,0,width),height);
+//            textSize(25);    
+            text((index/60).toString() + " hr",map(index,0,tlog.length,0,width) + 5,0.7*height );
+        }
+    }
+    stroke("blue");
+    strokeWeight(5);
+    noFill();
+    beginShape();
+    for(var index = 0;index < tlog.length;index++){
+        vertex(map(index,0,tlog.length,0,width),map(tlog[index].A,0,300,height,0));
+    }
+    endShape();
+    stroke("red");
+    noFill();
+    beginShape();
+    for(var index = 0;index < tlog.length;index++){
+        vertex(map(index,0,tlog.length,0,width),map(tlog[index].B,0,300,height,0));
+    }
+    endShape();
+    
+    png64 = document.getElementById("defaultCanvas0").toDataURL("image/png");
+    
+    var timestamp = Math.round((new Date().getTime())/1000).toString();
+    var httpc = new XMLHttpRequest();
+    var url = "save-png.php";        
+    httpc.open("POST", url, true);
+    httpc.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+//    
+    
+    httpc.send("data="+encodeURIComponent(png64.substring(22))+"&filename=" + filename.split("cooldown-log-data/")[1].split(".json")[0] + ".png");//send text to filesaver.php
+     //location.reload(); 
+     
+    
+    var newbox = document.createElement("DIV");
+    newbox.classList.add("imagebox");     
+    var deletespan = document.createElement("SPAN");
+    deletespan.innerHTML = "X";
+    deletespan.classList.add("deletespan");
+    deletespan.onclick = function(){
+        //delete the parent div of the image
+        //delete the file
+        var filename = this.parentElement.getElementsByClassName("filelabel")[0].innerHTML; 
+        var httpc = new XMLHttpRequest();
+        var url = "delete-file.php";         
+        httpc.open("POST", url, true);
+        httpc.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        httpc.send("filename=" + filename);//send text to deletefile.php
+        this.parentElement.parentElement.removeChild(this.parentElement);
+    }
+    
+    newbox.appendChild(deletespan);
+
+    var newdiv = document.createElement("DIV");
+    newdiv.innerHTML = filename;
+    newdiv.className = "filelabel";
+    newbox.appendChild(newdiv);
+
+    var newimg = document.createElement("IMG");
+    newimg.src = png64;
+    newimg.classList.add("uploadimage");
+    newimg.classList.add("button");
+    newbox.appendChild(newimg);   
+    document.getElementById("feedscroll").insertBefore(newbox,document.getElementById("feedscroll").getElementsByClassName("imagebox")[0]);     
+}
+
+function keyPressed() {
+  
+//  savejson();
+}
+
+
+
+direction = '';
+function mouseWheel(event) {
+  if (event.delta > 0) {
+    direction = 'mouse wheel down';
+
+  } else {
+    direction = 'mouse wheel up';
+  }  
+}
+
+function mouseClicked() {
+  // Code to run.
+}
+
+function savejson(){
+    
+}
+
+
+upuploadImages = [];
+var httpc9 = new XMLHttpRequest();
+    httpc9.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        upuploadImages = JSON.parse(this.responseText);
+        for(var index = upuploadImages.length - 1;index >= 0;index--) {
+            if(upuploadImages[index].includes(".png") && upuploadImages[index].includes("cooldown")){
+                var newbox = document.createElement("DIV");
+                newbox.classList.add("imagebox");         
+                
+                document.getElementById("feedscroll").appendChild(newbox);
+                var newimg = document.createElement("IMG");
+                newimg.src = upuploadImages[index];
+                newimg.classList.add("uploadimage");
+                newimg.classList.add("button");
+                newbox.appendChild(newimg);
+                
+                newimg.onclick = function(){
+                    img = loadImage(this.src);
+                    loadImage(this.src, img => {
+                        image(img, 0, 0,squareWidth-50,squareWidth-70);
+                    });
+                }
+            }
+        }
+    }
+};
+httpc9.open("GET", "list-files.php", true);
+httpc9.send();
+</script>
+</body>
+</html>
+
+
+    
+    

@@ -2,6 +2,7 @@
 # HTML FILES
 
  - [branch.html](branch.html)
+ - [data-browser.html](data-browser.html)
  - [delete-images.html](delete-images.html)
  - [delete-markdown-files.html](delete-markdown-files.html)
  - [delete-php-files.html](delete-php-files.html)
