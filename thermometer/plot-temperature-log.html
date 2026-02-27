@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <!--
+    Organic Web Home page
+    test
+   -->
+
+<link href="data:image/x-icon;base6r4,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAP//AP///wANAP8A5Dz6ABueRwAAt/8A6BonABo86AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREREREREREREAAAEREREREQCIgREREd3dwAAB3d3d3d3d3d3d3d3d3d3d3d3d3VVVVVVVQAFVVAAVVVQIiBRAiIBEQIAIBECAAERAgAgFgIABmYCIiBmAiIGZgIiIGYCIgZmYCIAaIAAMzMzAAiIiIiIiIiIiIiIiIiIiIiIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" rel="icon" type="image/x-icon">
+
+   <title>plot temperature log</title>    
+   <script src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
+</head>
+<body>    
+    <H1>temperature.json</H1>
+<textarea id = "databox"></textarea>
+
+    <p>
+        <a href = "index.html">index.html</a>
+    </p>
+<style>
+
+</style>
+<script>
+function setup() {
+    frameRate(10);
+    var httpc = new XMLHttpRequest();
+    httpc.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            temperature_log = JSON.parse(this.responseText);
+            
+        }
+    };
+    httpc.open("GET", "load-file.php?filename=temperature_log.json", true);
+    httpc.send();
+}
+
+previous_time = "";
+
+function draw(){
+    var httpc = new XMLHttpRequest();
+    httpc.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            temperature = JSON.parse(this.responseText);
+            document.getElementById("databox").value = this.responseText;
+            previous_time = temperature.datetime;
+        }
+    };
+    httpc.open("GET", "load-file.php?filename=temperature.json", true);
+    httpc.send();
+}
+
+
+</script>
+</body>
+</html>
+
+
+    
+    

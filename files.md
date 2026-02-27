@@ -18,10 +18,13 @@
  - [list-files.html](list-files.html)
  - [organic-web-home.html](organic-web-home.html)
  - [plot-cooldown.html](plot-cooldown.html)
+ - [plot-cooldown2.html](plot-cooldown2.html)
+ - [plot-temperature-log.html](plot-temperature-log.html)
  - [qrcode.html](qrcode.html)
  - [read-markdown-files.html](read-markdown-files.html)
  - [read-markdown-latex-files.html](read-markdown-latex-files.html)
  - [read-text-files.html](read-text-files.html)
+ - [temperature.html](temperature.html)
 
 # CSS FILES
 
@@ -34,9 +37,17 @@
 
 # JSON FILES
 
+ - [cooldown_log_2025_12_05_0804.json](cooldown_log_2025_12_05_0804.json)
  - [dna.json](dna.json)
  - [links.json](links.json)
  - [log.json](log.json)
+ - [temperature.json](temperature.json)
+ - [temperature_log.json](temperature_log.json)
+ - [temperature_log_2026_02_27_11_10_49.json](temperature_log_2026_02_27_11_10_49.json)
+ - [temperature_log_2026_02_27_11_12_41.json](temperature_log_2026_02_27_11_12_41.json)
+ - [temperature_log_2026_02_27_11_17_47.json](temperature_log_2026_02_27_11_17_47.json)
+ - [temperature_log_2026_02_27_11_20_35.json](temperature_log_2026_02_27_11_20_35.json)
+ - [thermometer.json](thermometer.json)
 
 # MARKDOWN FILES
 

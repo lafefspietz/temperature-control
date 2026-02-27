@@ -1,0 +1,36 @@
+{
+    "html": [
+        "branch.html",
+        "edit-php-files.html",
+        "edit-web-files.html",
+        "index.html",
+        "plot-temperature-log.html",
+        "temperature.html"
+    ],
+    "json": [
+        "temperature.json",
+        "temperature_log.json",
+        "thermometer.json"
+    ],
+    "css": [],
+    "js": [],
+    "md": [
+        "README.md"
+    ],
+    "text": [],
+    "php": [
+        "branch.txt",
+        "compile-php.txt",
+        "delete-branch.txt",
+        "delete-file.txt",
+        "generate-dna.txt",
+        "list-branches.txt",
+        "list-files.txt",
+        "load-file.txt",
+        "local-replicator.txt",
+        "replicator.txt",
+        "save-file.txt",
+        "save-png.txt",
+        "upload-image.txt"
+    ]
+}
