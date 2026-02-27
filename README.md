@@ -1,4 +1,7 @@
 ![](qrcode.png)
+
+ - [plot-cooldown2.html](plot-cooldown2.html)
+ - [temperature.json](temperature.json)
  - [plot-cooldown.html](plot-cooldown.html)
  - [data-browser.html](data-browser.html)
  - [edit-web-files.html](edit-web-files.html)

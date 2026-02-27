@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <!--
+
+-->
+<link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAPv/AAD4/wAA+38AAPufAAD77wAAA/AAAPvvAAD7nwAA+38AAPj/AAD7/wAA//8AAP//AAD//wAA" rel="icon" type="image/x-icon">
+
+   <title>plot cooldown</title>    
+   <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+   <script>
+    MathJax.Hub.Config({
+        tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true,
+        processClass: "mathjax",
+        ignoreClass: "no-mathjax"
+        }
+    });//			MathJax.Hub.Typeset();//tell Mathjax to update the math
+</script>
+</head>
+<body> 
+<div id = "controlscroll">
+    <p>
+        <a href = "index.html">index.html</a>
+    </p>
+    <p>
+        <a href = "edit-web-files.html">edit-web-files.html</a>
+    </p>    
+    <p>
+        <a id = "datalink"></a>
+    </p>
+</div>
+<table id = "temptable">
+    <tr id ="rowa">
+        <td>$T_{\textrm{cold plate}} = $</td>
+        <td id = "ta"></td>
+        <td>K</td>
+    </tr>
+    <tr id = "rowb">
+        <td>$T_{\textrm{50 K plate}} = $</td>
+        <td id = "tb"></td>
+        <td>K</td>
+    </tr>
+</table>
+<style>
+#temptable{
+    position:absolute;
+    top:10px;
+    right:10px;
+}
+
+body{
+    font-family:Arial;
+    background-color:#404040;
+    color:#0CCDDF;
+}
+input{
+    color:#00ff00;
+    background-color:black;
+    font-family:courier;
+    border-color:#0CCDDF;
+}
+h1{
+    text-align:center;
+}
+.button{
+    border:solid;
+    cursor:pointer;
+    text-align:center;
+}
+.button:hover{
+    background-color:#0CCDDF40;
+}
+.button:active{
+    background-color:#0CCDDFa0;
+}
+
+#controlscroll{
+    overflow:scroll;
+    position:absolute;
+    left:0px;
+    top:0px;
+    bottom:0px;
+    padding-left:1em;
+    padding-right:1em;
+    background-color:#0a0a0a;
+}
+
+a{
+    color:#ff2cb4;
+}
+
+main{
+    position:absolute;
+    right:10px;
+    top:10px;
+    border:solid;
+    cursor:pointer;
+    background-color:white;
+}
+</style>
+<script>
+
+tlog = [];
+filename = "";
+numberofpoints = 400;
+dotsize = 10;
+timeindex = 0;
+pulseperiod = 100;
+
+function setup() {
+    createCanvas(innerHeight-5,innerHeight-50);    
+    strokeWeight(1);  
+    var httpcUpload = new XMLHttpRequest();
+    httpcUpload.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            files = JSON.parse(this.responseText);
+            filename = files[files.length-1];
+            document.getElementById("datalink").href = "cooldown-log-data/" + filename;
+            document.getElementById("datalink").innerHTML = "cooldown-log-data/" + filename;
+            var httpc = new XMLHttpRequest();
+            httpc.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    tlog = JSON.parse(this.responseText);
+                }
+            };
+            httpc.open("GET", "load-file.php?filename=cooldown-log-data/" + filename, true);
+            httpc.send();
+        }
+    };
+    httpcUpload.open("GET", "list-files.php?directoryname=cooldown-log-data", true);
+    httpcUpload.send();
+}
+
+
+function draw(){
+    
+    dotsize = 15 + 2*Math.sin(2*Math.PI*timeindex/pulseperiod);
+    var httpc = new XMLHttpRequest();
+    httpc.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            tlog = JSON.parse(this.responseText);
+            clear();
+            stroke("black");
+            fill("black");
+            strokeWeight(1);
+            textSize(30);
+            text("3 K",100,map(3,0,300,height,0) - 5);
+            text("10 K",10,map(10,0,300,height,0) - 5);
+            text("50 K",10,map(50,0,300,height,0) - 5);
+            text("100 K",10,map(100,0,300,height,0) - 5);
+            text("150 K",10,map(150,0,300,height,0) - 5);
+            text("200 K",10,map(200,0,300,height,0) - 5);
+            text("250 K",10,map(250,0,300,height,0) - 5);
+
+            text("1 hour",map(60,0,numberofpoints,0,width) + 10,50);
+            text("2 hours",map(2*60,0,numberofpoints,0,width) + 10,50);
+            text("3 hours",map(3*60,0,numberofpoints,0,width) + 10,50);
+            text("4 hours",map(4*60,0,numberofpoints,0,width) + 10,50);
+            text("5 hours",map(5*60,0,numberofpoints,0,width) + 10,50);
+            text("6 hours",map(6*60,0,numberofpoints,0,width) + 10,50);
+
+            strokeWeight(2.5);
+            line(0,map(10,0,300,height,0),width,map(10,0,300,height,0));
+            line(0,map(50,0,300,height,0),width,map(50,0,300,height,0));
+            line(0,map(150,0,300,height,0),width,map(150,0,300,height,0));
+            line(0,map(250,0,300,height,0),width,map(250,0,300,height,0));
+
+            strokeWeight(5);
+            line(0,map(100,0,300,height,0),width,map(100,0,300,height,0));
+            line(0,map(200,0,300,height,0),width,map(200,0,300,height,0));
+            line(map(60,0,numberofpoints,0,width),0,map(60,0,numberofpoints,0,width),height);
+            line(map(2*60,0,numberofpoints,0,width),0,map(2*60,0,numberofpoints,0,width),height);
+            line(map(3*60,0,numberofpoints,0,width),0,map(3*60,0,numberofpoints,0,width),height);
+            line(map(4*60,0,numberofpoints,0,width),0,map(4*60,0,numberofpoints,0,width),height);
+            line(map(5*60,0,numberofpoints,0,width),0,map(5*60,0,numberofpoints,0,width),height);
+            line(map(6*60,0,numberofpoints,0,width),0,map(6*60,0,numberofpoints,0,width),height);
+
+            stroke("blue");
+            strokeWeight(1);
+            line(0,map(3,0,300,height,0),width,map(3,0,300,height,0));
+            strokeWeight(5);
+            noFill();
+            beginShape();
+            for(var index = 0;index < tlog.length;index++){
+                vertex(map(index,0,numberofpoints,0,width),map(tlog[index].A,0,300,height,0));
+            }
+            endShape();
+            fill("blue");
+            circle(map(index,0,numberofpoints,0,width),map(tlog[tlog.length - 1].A,0,300,height,0),dotsize);
+                          
+            stroke("red");
+            noFill();
+            beginShape();
+            for(var index = 0;index < tlog.length;index++){
+                vertex(map(index,0,numberofpoints,0,width),map(tlog[index].B,0,300,height,0));
+            }
+            endShape();
+            fill("red");
+            circle(map(index,0,numberofpoints,0,width),map(tlog[tlog.length - 1].B,0,300,height,0),dotsize);
+            
+            document.getElementById("ta").innerHTML = tlog[tlog.length - 1].A.toString();
+            document.getElementById("tb").innerHTML = tlog[tlog.length - 1].B.toString();
+            
+        }
+    };
+    httpc.open("GET", "load-file.php?filename=cooldown-log-data/" + filename, true);
+    httpc.send();
+    
+    timeindex++;
+    if(timeindex > 10000){
+        timeindex = 0;
+    }
+    
+    
+    
+}
+
+
+
+
+function keyPressed() {
+  
+//  savejson();
+}
+
+direction = '';
+function mouseWheel(event) {
+  if (event.delta > 0) {
+    direction = 'mouse wheel down';
+
+  } else {
+    direction = 'mouse wheel up';
+  }  
+}
+
+
+
+function savejson(){
+    
+}
+</script>
+</body>
+</html>
+
+
+    
+    
